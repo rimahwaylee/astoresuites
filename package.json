@@ -1,0 +1,23 @@
+{
+  "name": "astoresuites",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test:recette": "cross-env ENV=recette npx playwright test",
+    "test:ppd": "cross-env ENV=ppd npx playwright test",
+    "test:login": "cross-env ENV=recette npx playwright test tests/login/login.spec.ts --project=chromium"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@types/node": "^24.7.0",
+    "allure-playwright": "^3.4.1",
+    "cross-env": "^10.1.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3"
+  }
+}
