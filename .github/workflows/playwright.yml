@@ -2,54 +2,49 @@ name: Playwright Tests with Allure Report
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      # 👇 Valeur par défaut
+      NODE_ENV: recette
+      # 👇 Secrets GitHub
+      BASE_URL: ${{ secrets.BASE_URL }}
+      LOGIN_USERNAME: ${{ secrets.LOGIN_USERNAME }}
+      LOGIN_PASSWORD: ${{ secrets.LOGIN_PASSWORD }}
+      LOGIN_INACTIF_USERNAME: ${{ secrets.LOGIN_INACTIF_USERNAME }}
+      LOGIN_INACTIF_PASSWORD: ${{ secrets.LOGIN_INACTIF_PASSWORD }}
+
     steps:
-      # 1️⃣ Récupérer le code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Installer Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # 3️⃣ Installer dépendances
       - name: Install dependencies
         run: npm ci
 
-      # 4️⃣ Installer navigateurs Playwright
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      # 5️⃣ Exécuter les tests avec Allure
       - name: Run Playwright tests
         run: npx playwright test --reporter=line,allure-playwright
 
-      # 6️⃣ Générer le rapport Allure
       - name: Generate Allure report
         run: |
           npm install -g allure-commandline
           allure generate allure-results --clean -o allure-report
 
-      # 7️⃣ Publier le rapport comme artefact
       - name: Upload Allure report artifact
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
           path: allure-report
-
-      # 8️⃣ (Optionnel) Déployer sur GitHub Pages
-      - name: Deploy Allure report to GitHub Pages
-        if: github.ref == 'refs/heads/main'
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./allure-report
