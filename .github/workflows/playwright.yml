@@ -35,7 +35,13 @@ jobs:
 
       # 🧪 Exécute les tests à l’intérieur du conteneur Docker
       - name: Run Playwright tests inside Docker
-        run: docker run --rm playwright-tests
+        run: |
+          echo "[INFO] Vérification du fichier .env.recette avant exécution :"
+          ls -la .env.recette || echo "❌ .env.recette introuvable dans le runner"
+          echo "[INFO] Lancement du conteneur Docker..."
+          docker run --rm \
+          -v ${{ github.workspace }}/.env.recette:/app/.env.recette \
+          playwright-tests
 
       # 📊 Génère le rapport Allure
       - name: Generate Allure report
