@@ -1,14 +1,23 @@
-# Dockerfile
-FROM mcr.microsoft.com/playwright:focal
+# Étape 1 : image de base officielle Playwright (avec tous les navigateurs)
+FROM mcr.microsoft.com/playwright:v1.56.0-jammy
 
+# Dossier de travail
 WORKDIR /app
 
+# Copie uniquement les fichiers de dépendances pour optimiser le cache Docker
 COPY package*.json ./
-RUN npm install
 
+# Installation des dépendances du projet (Playwright, Allure, etc.)
+RUN npm ci --quiet
+
+# Copie du reste du projet
 COPY . .
 
-# Installer les navigateurs Playwright
-RUN npx playwright install --with-deps
+# Installe Allure globalement (pour génération de rapports)
+RUN npm install -g allure-commandline
 
-CMD ["npx", "playwright", "test"]
+# Définit l’environnement d’exécution
+ENV NODE_ENV=recette
+
+# Commande par défaut : exécute les tests Playwright avec Allure
+CMD ["npx", "playwright", "test", "--reporter=line,allure-playwright"]

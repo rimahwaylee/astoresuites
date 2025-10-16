@@ -18,21 +18,22 @@ test.describe('Mot de passe oublié', () => {
   );
   });
 
+
   test('email non actif - avertissement affiché', async ({ page }) => {
     await forgotPassword.resetPassword(credentials.inactive_username);
     await expect(page.locator('#warning')).toContainText('Your account has been deactivated');
-
   });
 
   test('email erroné ou inexistant - erreur affichée', async ({ page }) => {
     await forgotPassword.resetPassword('adresse@inconnue.com');
    await expect(page.locator('#warning')).toContainText('No user is registered with this email');
-
   });
+
 
   test('mdp non identique - message d’erreur cohérent', async ({ page }) => {
     await forgotPassword.gotoResetLink();
     await forgotPassword.fillNewPassword('Test1234!', 'Test12345!');
     await expect(page.locator('//span[contains(text(),"non identiques")]')).toBeVisible();
   });
+
 });
