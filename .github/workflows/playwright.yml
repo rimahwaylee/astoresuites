@@ -43,11 +43,20 @@ jobs:
           cat .env.recette || echo "file not found"
 
       # 🧪 Exécution des tests Playwright dans Docker
-      - name: Run Playwright tests inside Docker
+      - name: Run Playwright tests
         run: |
           docker run --rm \
-            -v ${{ github.workspace }}/.env.recette:/app/.env.recette \
-            playwright-tests  npx playwright test || true
+          -v ${{ github.workspace }}/.env.recette:/app/.env.recette \
+          -v ${{ github.workspace }}/allure-results:/app/allure-results \
+          playwright-tests npx playwright test || true
+
+      - name: Generate Allure Report
+        if: always()
+        run: |
+          docker run --rm \
+          -v ${{ github.workspace }}/allure-results:/app/allure-results \
+          -v ${{ github.workspace }}/allure-report:/app/allure-report \
+          playwright-tests npx allure generate /app/allure-results --clean -o /app/allure-report
 
       # 📊 Génération du rapport Allure
       - name: Generate Allure Report
