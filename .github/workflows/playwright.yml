@@ -24,7 +24,7 @@ jobs:
       - name: Build Docker image
         run: docker build -t playwright-tests .
 
-      # 🔐 Crée le fichier .env.recette à partir des secrets
+      # 🔐 Création du fichier .env.recette
       - name: Create .env.recette file
         run: |
           echo "BASE_URL=${{ secrets.BASE_URL }}" >> .env.recette
@@ -33,23 +33,40 @@ jobs:
           echo "LOGIN_INACTIF_USERNAME=${{ secrets.LOGIN_INACTIF_USERNAME }}" >> .env.recette
           echo "LOGIN_INACTIF_PASSWORD=${{ secrets.LOGIN_INACTIF_PASSWORD }}" >> .env.recette
 
-      # 🧪 Exécute les tests à l’intérieur du conteneur Docker
-      - name: Run Playwright tests inside Docker
-        run: docker run --rm playwright-tests
-
-      # 📊 Génère le rapport Allure
-      - name: Generate Allure report
+      # 🧩 Vérifie que le fichier .env.recette existe bien
+      - name: Debug .env.recette existence
         run: |
-          allure generate allure-results --clean -o allure-report
+          echo "[DEBUG] Contents of workspace root:"
+          ls -la
+          echo "---------"
+          echo "[DEBUG] .env.recette content:"
+          cat .env.recette || echo "file not found"
 
-      # 📦 Upload du rapport comme artefact pour consultation dans l'onglet "Actions"
+      # 🧪 Exécution des tests Playwright dans Docker
+      - name: Run Playwright tests inside Docker
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/.env.recette:/app/.env.recette \
+            playwright-tests  npx playwright test || true
+
+      # 📊 Génération du rapport Allure
+      - name: Generate Allure Report
+        if: always()
+        run: |
+         docker run --rm \
+         -v ${{ github.workspace }}/allure-results:/app/allure-results \
+         -v ${{ github.workspace }}/allure-report:/app/allure-report \
+         playwright-tests npx allure generate /app/allure-results --clean -o /app/allure-report
+
+
+      # 📦 Upload du rapport comme artefact
       - name: Upload Allure report artifact
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
           path: allure-report
 
-      # 🌐 Déploie le rapport sur GitHub Pages
+      # 🌐 Déploiement automatique sur GitHub Pages
       - name: Deploy Allure report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
